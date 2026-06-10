@@ -1,51 +1,62 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 
 const FRAME_COUNT = 192;
-const START_FRAME = 0;
+const PRELOAD_WINDOW = 10;
 
 export default function HeroSequence() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
+  
+  const imageCache = useRef<Map<number, HTMLImageElement>>(new Map());
+  const pendingRequests = useRef<Set<number>>(new Set());
+  const currentFrameRef = useRef<number>(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
 
-  // Preload images
-  useEffect(() => {
-    const loadedImages: HTMLImageElement[] = [];
-    let loadedCount = 0;
+  const loadImagesAround = useCallback((centerIndex: number, renderCallback?: () => void) => {
+    const start = Math.max(0, centerIndex - PRELOAD_WINDOW);
+    const end = Math.min(FRAME_COUNT - 1, centerIndex + PRELOAD_WINDOW);
 
-    for (let i = START_FRAME; i < FRAME_COUNT; i++) {
-      const img = new Image();
-      // Format: frame_000000.png
-      const frameNum = i.toString().padStart(6, '0');
-      img.src = `/images/hero/frame_${frameNum}.png`;
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === FRAME_COUNT) {
-          setImages(loadedImages);
-        }
-      };
-      loadedImages.push(img);
+    for (let i = start; i <= end; i++) {
+      if (!imageCache.current.has(i) && !pendingRequests.current.has(i)) {
+        pendingRequests.current.add(i);
+        const img = new Image();
+        const frameNum = i.toString().padStart(6, '0');
+        img.src = `/images/hero/frame_${frameNum}.png`;
+        img.onload = () => {
+          imageCache.current.set(i, img);
+          pendingRequests.current.delete(i);
+          // If the loaded image is the one we're currently waiting for, trigger render
+          if (i === currentFrameRef.current && renderCallback) {
+            renderCallback();
+          }
+        };
+      }
+    }
+
+    // Memory management: evict frames far outside the window
+    for (const key of imageCache.current.keys()) {
+      if (Math.abs(key - centerIndex) > PRELOAD_WINDOW * 3) {
+        imageCache.current.delete(key);
+      }
     }
   }, []);
 
   // Update canvas on scroll
   useEffect(() => {
-    if (images.length !== FRAME_COUNT) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Handle high DPI displays
-    const dpr = window.devicePixelRatio || 1;
+    // Handle high DPI displays but cap at 1.5 for performance
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    
     // Set logical size to window
     canvas.style.width = `${window.innerWidth}px`;
     canvas.style.height = `${window.innerHeight}px`;
@@ -59,8 +70,14 @@ export default function HeroSequence() {
         FRAME_COUNT - 1,
         Math.floor(progress * FRAME_COUNT)
       );
-      const img = images[frameIndex];
-      if (!img) return;
+      
+      currentFrameRef.current = frameIndex;
+      
+      // Load neighbors, and pass render as a callback in case the current frame is missing
+      loadImagesAround(frameIndex, () => render(progress));
+
+      const img = imageCache.current.get(frameIndex);
+      if (!img) return; // Image not loaded yet, skip render frame
 
       // Draw image covering the canvas (object-fit: cover equivalent)
       const scale = Math.max(window.innerWidth / img.width, window.innerHeight / img.height);
@@ -71,8 +88,8 @@ export default function HeroSequence() {
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
     };
 
-    // Initial render
-    render(0);
+    // Initial render setup (preload first chunks)
+    loadImagesAround(0, () => render(0));
 
     const unsubscribe = scrollYProgress.on('change', (v) => {
       render(v);
@@ -93,7 +110,7 @@ export default function HeroSequence() {
       unsubscribe();
       window.removeEventListener('resize', handleResize);
     };
-  }, [images, scrollYProgress]);
+  }, [scrollYProgress, loadImagesAround]);
 
   const opacity = useTransform(scrollYProgress, [0.8, 1], [1, 0]);
 

@@ -383,7 +383,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
           alpha: true
         });
         this.renderer.setSize(initW, initH, false);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         this.composer = new EffectComposer(this.renderer);
         container.append(this.renderer.domElement);
 
@@ -472,20 +472,27 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
           })
         );
 
-        const smaaPass = new EffectPass(
-          this.camera,
-          new SMAAEffect({
-            preset: SMAAPreset.MEDIUM,
-            searchImage: SMAAEffect.searchImageDataURL,
-            areaImage: SMAAEffect.areaImageDataURL
-          } as any)
-        );
-        this.renderPass.renderToScreen = false;
-        this.bloomPass.renderToScreen = false;
-        smaaPass.renderToScreen = true;
-        this.composer.addPass(this.renderPass);
-        this.composer.addPass(this.bloomPass);
-        this.composer.addPass(smaaPass);
+        const isMobile = window.innerWidth < 768;
+
+        if (!isMobile) {
+          const smaaPass = new EffectPass(
+            this.camera,
+            new SMAAEffect({
+              preset: SMAAPreset.MEDIUM,
+              searchImage: SMAAEffect.searchImageDataURL,
+              areaImage: SMAAEffect.areaImageDataURL
+            } as any)
+          );
+          smaaPass.renderToScreen = true;
+          this.bloomPass.renderToScreen = false;
+          this.composer.addPass(this.renderPass);
+          this.composer.addPass(this.bloomPass);
+          this.composer.addPass(smaaPass);
+        } else {
+          this.bloomPass.renderToScreen = true;
+          this.composer.addPass(this.renderPass);
+          this.composer.addPass(this.bloomPass);
+        }
       }
 
       loadAssets() {
