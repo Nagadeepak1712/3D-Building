@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+  <g transform="translate(40, 100)">
+    <!-- Z -->
+    <text x="0" y="0" font-family="Arial, sans-serif" font-weight="900" font-size="100" fill="#F03323">Z</text>
+    <!-- S -->
+    <text x="70" y="0" font-family="Arial, sans-serif" font-weight="900" font-size="100" fill="#0D8CE1">S</text>
+    <!-- O -->
+    <text x="140" y="0" font-family="Arial, sans-serif" font-weight="900" font-size="100" fill="#00A770">O</text>
+    <rect x="190" y="-50" width="10" height="10" fill="#00A770" />
+    <rect x="200" y="-25" width="8" height="8" fill="#00A770" />
+    <!-- S -->
+    <text x="220" y="0" font-family="Arial, sans-serif" font-weight="900" font-size="100" fill="#FFAD00">S</text>
+    
+    <!-- IT SOLUTIONS -->
+    <text x="5" y="60" font-family="Arial, sans-serif" font-weight="800" font-size="34" fill="#3B464F" letter-spacing="4">IT SOLUTIONS</text>
+  </g>
+</svg>
