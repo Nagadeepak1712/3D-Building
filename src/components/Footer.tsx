@@ -3,6 +3,8 @@ import Hyperspeed from './Hyperspeed';
 
 const Footer: React.FC = () => {
   const hyperspeedOptions = useMemo(() => ({
+    onSpeedUp: () => {},
+    onSlowDown: () => {},
     distortion: "turbulentDistortion",
     length: 400,
     roadWidth: 9,

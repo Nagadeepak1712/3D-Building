@@ -43,8 +43,8 @@ const DEFAULT_EFFECT_OPTIONS = {
 };
 
 const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
-  const hyperspeed = useRef(null);
-  const appRef = useRef(null);
+  const hyperspeed = useRef<any>(null);
+  const appRef = useRef<any>(null);
 
   useEffect(() => {
     if (appRef.current) {
@@ -83,7 +83,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
       uPowY: { value: new THREE.Vector2(20, 2) }
     };
 
-    let nsin = val => Math.sin(val) * 0.5 + 0.5;
+    let nsin = (val: any) => Math.sin(val) * 0.5 + 0.5;
 
     const distortions = {
       mountainDistortion: {
@@ -104,7 +104,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             );
           }
         `,
-        getJS: (progress, time) => {
+        getJS: (progress: any, time: any) => {
           let movementProgressFix = 0.02;
           let uFreq = mountainUniforms.uFreq.value;
           let uAmp = mountainUniforms.uAmp.value;
@@ -136,7 +136,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             );
           }
         `,
-        getJS: (progress, time) => {
+        getJS: (progress: any, time: any) => {
           let movementProgressFix = 0.02;
           let uFreq = xyUniforms.uFreq.value;
           let uAmp = xyUniforms.uAmp.value;
@@ -167,7 +167,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             );
           }
         `,
-        getJS: (progress, time) => {
+        getJS: (progress: any, time: any) => {
           let camProgress = 0.0125;
           let uFreq = LongRaceUniforms.uFreq.value;
           let uAmp = LongRaceUniforms.uAmp.value;
@@ -212,15 +212,15 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             );
           }
         `,
-        getJS: (progress, time) => {
+        getJS: (progress: any, time: any) => {
           const uFreq = turbulentUniforms.uFreq.value;
           const uAmp = turbulentUniforms.uAmp.value;
 
-          const getX = p =>
+          const getX = (p: any) =>
             Math.cos(Math.PI * p * uFreq.x + time) * uAmp.x +
             Math.pow(Math.cos(Math.PI * p * uFreq.y + time * (uFreq.y / uFreq.x)), 2) * uAmp.y;
 
-          const getY = p =>
+          const getY = (p: any) =>
             -nsin(Math.PI * p * uFreq.z + time) * uAmp.z -
             Math.pow(nsin(Math.PI * p * uFreq.w + time / (uFreq.z / uFreq.w)), 5) * uAmp.w;
 
@@ -321,13 +321,13 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             );
           }
         `,
-        getJS: (progress, time) => {
+        getJS: (progress: any, time: any) => {
           const uFreq = deepUniforms.uFreq.value;
           const uAmp = deepUniforms.uAmp.value;
           const uPowY = deepUniforms.uPowY.value;
 
-          const getX = p => Math.sin(p * Math.PI * uFreq.x + time) * uAmp.x;
-          const getY = p => Math.pow(p * uPowY.x, uPowY.y) + Math.sin(p * Math.PI * uFreq.y + time) * uAmp.y;
+          const getX = (p: any) => Math.sin(p * Math.PI * uFreq.x + time) * uAmp.x;
+          const getY = (p: any) => Math.pow(p * uPowY.x, uPowY.y) + Math.sin(p * Math.PI * uFreq.y + time) * uAmp.y;
 
           let distortion = new THREE.Vector3(
             getX(progress) - getX(progress + 0.01),
@@ -478,7 +478,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
             preset: SMAAPreset.MEDIUM,
             searchImage: SMAAEffect.searchImageDataURL,
             areaImage: SMAAEffect.areaImageDataURL
-          })
+          } as any)
         );
         this.renderPass.renderToScreen = false;
         this.bloomPass.renderToScreen = false;
@@ -760,7 +760,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
         let curve = new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1));
         let geometry = new THREE.TubeGeometry(curve, 40, 1, 8, false);
 
-        let instanced = new THREE.InstancedBufferGeometry().copy(geometry);
+        let instanced = new THREE.InstancedBufferGeometry().copy(geometry as any);
         instanced.instanceCount = options.lightPairsPerRoadWay * 2;
 
         let laneWidth = options.roadWidth / options.lanesPerRoad;
@@ -916,7 +916,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
       init() {
         const options = this.options;
         const geometry = new THREE.PlaneGeometry(1, 1);
-        let instanced = new THREE.InstancedBufferGeometry().copy(geometry);
+        let instanced = new THREE.InstancedBufferGeometry().copy(geometry as any);
         let totalSticks = options.totalSideLightSticks;
         instanced.instanceCount = totalSticks;
 
@@ -1046,7 +1046,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS }) => {
         this.uTime = { value: 0 };
       }
 
-      createPlane(side: any, width: any, isRoad: any) {
+      createPlane(side: any, _width: any, isRoad: any) {
         const options = this.options;
         let segments = 100;
         const geometry = new THREE.PlaneGeometry(
